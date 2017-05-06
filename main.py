@@ -122,30 +122,30 @@ class maze(): #The main maze class
             
         else: #Cell has no neighbours
             if self.stack:
-                self.currentX, self.currentY = self.stack[-1] #Go back to the previous current cell
-                self.stack.pop()
+                #Go back to the previous current cell
+                self.currentX, self.currentY = self.stack.pop() 
                 
             if not self.stack:
+                #Generation has finished
                 return True
 
 class player(): #The player
     def __init__(self):
         #This represents a mask showing what the player knows of the maze
-        self.known = [[0 for i in range(boardHeight)] for i in range(boardWidth)]
+        self.known = [[0]*boardHeight for i in range(boardWidth)]
          
         self.X = 0
         self.Y = 0       
         self.oldX = 99
         self.oldY = 99 
         
-    def checkControls(self): #check player controls
-        global done
-        
-        pygame.event.pump()            #Refresh events
-        key = pygame.key.get_pressed() #State of all keys
+    def checkControls(self): 
+        #check player controls (return False if we need to quit)
+        pygame.event.pump()    
+        key = pygame.key.get_pressed()
         
         if key[pygame.K_ESCAPE]:
-            done = 1 #Quit emulator
+            return False
             
         if key[pygame.K_TAB]:
             newMaze.__init__()
@@ -192,6 +192,8 @@ class player(): #The player
                 solver.__init__()
                 self.X = mouseX/tileSize
                 self.Y = mouseY/tileSize
+
+        return True
     
     def draw(self): #draw the player
         screen.fill((255,0,0), (self.X*tileSize,self.Y*tileSize,tileSize,tileSize))
@@ -209,7 +211,6 @@ class player(): #The player
         self.known[self.X+1][self.Y-1] = 1
         self.known[self.X-1][self.Y-1] = 1
         
-        self.checkControls()
         self.draw()
         
 class mazeSolver(): #Assists in solving the maze
@@ -223,36 +224,36 @@ class mazeSolver(): #Assists in solving the maze
     def solve(self): #Call this to find and make next move
         
         self.neighbours = [] #Reset neighbours
-        newMaze.layout[self.currentX][self.currentY] = 2 #Mark path green
+        newMaze.layout[self.currentX][self.currentY] = PATH
         
         #Look for open cells    
         try:
             if (self.currentY-1) >= 0:
-                if newMaze.layout[self.currentX][self.currentY-1] == 0: #Above
+                if newMaze.layout[self.currentX][self.currentY-1] == FLOOR: #Above
                     self.neighbours.append((self.currentX,self.currentY-1))
         except:
             print self.neighbours
         
         try:
             if (self.currentX-1) >= 0:
-                if newMaze.layout[self.currentX-1][self.currentY] == 0: #Left
+                if newMaze.layout[self.currentX-1][self.currentY] == FLOOR: #Left
                     self.neighbours.append((self.currentX-1,self.currentY))
         except:
             print self.neighbours
         
         try:
-            if newMaze.layout[self.currentX+1][self.currentY] == 0: #Right
+            if newMaze.layout[self.currentX+1][self.currentY] == FLOOR: #Right
                 self.neighbours.append((self.currentX+1,self.currentY))
         except:
             print self.neighbours
         
         try:
-            if newMaze.layout[self.currentX][self.currentY+1] == 0: #Down
+            if newMaze.layout[self.currentX][self.currentY+1] == FLOOR: #Down
                 self.neighbours.append((self.currentX,self.currentY+1))
         except:
             print self.neighbours
         
-        if len(self.neighbours) > 0: #If we found some neighbours that are open
+        if self.neighbours: #If we found some neighbours that are open
             newX, newY = self.neighbours[0] #Take the first option
             self.stack.append((self.currentX,self.currentY)) #Save old position to stack
             playerOne.oldX = self.currentX
@@ -263,12 +264,12 @@ class mazeSolver(): #Assists in solving the maze
             playerOne.Y = self.currentY
             
         else: #Cell has no open neighbours
-            if len(self.stack) > 0:
+            if self.stack:
                 playerOne.oldX = self.currentX
                 playerOne.oldY = self.currentY
-                self.currentX, self.currentY = self.stack[len(self.stack)-1] #Go back to the previous current cell
-                playerOne.X, playerOne.Y = self.stack[len(self.stack)-1]
-                del self.stack[len(self.stack)-1]
+                #Go back to the previous current cell
+                self.currentX, self.currentY = self.stack.pop() 
+                playerOne.X, playerOne.Y = self.currentX, self.currentY
                
 newMaze = maze()
 newMaze.generate()
@@ -276,10 +277,11 @@ playerOne = player()
 solver = mazeSolver()
 newMaze.drawMaze()
 
-done = 0 
-while done == 0:
+run = True 
+while run:
     newMaze.drawMaze()
     newMaze.oldLayout= newMaze.layout #Save layout
+    run = playerOne.checkControls()
     playerOne.update()
     pygame.display.flip()
     solver.solve()
