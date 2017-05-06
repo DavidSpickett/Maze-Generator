@@ -140,8 +140,8 @@ class player(): #The player
     def __init__(self):
         #This represents a mask showing what the player knows of the maze
         self.known = mazeArray(0)
-        self.X = 0
-        self.Y = 0
+        self.x = 0
+        self.y = 0
         
     def checkControls(self): 
         #check player controls (return False if we need to quit)
@@ -159,56 +159,58 @@ class player(): #The player
             solver.__init__(playerOne.x, playerOne.y)
             
         if key[pygame.K_UP]:
-            if self.Y != 0:
-                if newMaze.layout[self.X][self.Y-1] == FLOOR or newMaze.layout[self.X][self.Y-1] == PATH:
-                    newMaze.layout[self.X][self.Y] = PATH
-                    self.Y -= 1
+            if self.y != 0:
+                if newMaze.layout[self.x][self.y-1] == FLOOR or newMaze.layout[self.x][self.y-1] == PATH:
+                    newMaze.layout[self.x][self.y] = PATH
+                    self.y -= 1
         
         if key[pygame.K_DOWN]:
-            if self.Y != (boardHeight-1):
-                if newMaze.layout[self.X][self.Y+1] == FLOOR or newMaze.layout[self.X][self.Y+1] == PATH:
-                    newMaze.layout[self.X][self.Y] = PATH
-                    self.Y += 1
+            if self.y != (boardHeight-1):
+                if newMaze.layout[self.x][self.y+1] == FLOOR or newMaze.layout[self.x][self.y+1] == PATH:
+                    newMaze.layout[self.x][self.y] = PATH
+                    self.y += 1
         
         if key[pygame.K_LEFT]:
-            if self.X != 0:
-                if newMaze.layout[self.X-1][self.Y] == FLOOR or newMaze.layout[self.X-1][self.Y] == PATH:
-                    newMaze.layout[self.X][self.Y] = PATH
-                    self.X -= 1
+            if self.x != 0:
+                if newMaze.layout[self.x-1][self.y] == FLOOR or newMaze.layout[self.x-1][self.y] == PATH:
+                    newMaze.layout[self.x][self.y] = PATH
+                    self.x -= 1
         
         if key[pygame.K_RIGHT]:
             if self.Y != (boardWidth-1):
-                if newMaze.layout[self.X+1][self.Y] == FLOOR or newMaze.layout[self.X+1][self.Y] == PATH:
-                    newMaze.layout[self.X][self.Y] = PATH
-                    self.X += 1
+                if newMaze.layout[self.x+1][self.y] == FLOOR or newMaze.layout[self.x+1][self.y] == PATH:
+                    newMaze.layout[self.x][self.y] = PATH
+                    self.x += 1
                     
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouseX,mouseY = pygame.mouse.get_pos()
-                self.X = mouseX/TILE_SIZE
-                self.Y = mouseY/TILE_SIZE
+                self.x = mouseX/TILE_SIZE
+                self.y = mouseY/TILE_SIZE
                 newMaze.ClearPath()
-                solver.__init__(self.X, self.Y)
+                solver.__init__(self.x, self.y)
+            elif event.type == pygame.QUIT:
+                return False
 
         return True
     
-    def draw(self): #draw the player
+    def draw(self):
         screen.fill(PLAYEER_COLOUR, self.TileRect())
         
     def TileRect(self):
-        return (self.X*TILE_SIZE, self.Y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+        return (self.x*TILE_SIZE, self.y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
     def update(self):
         #Note parts of the maze we have discovered
-        self.known[self.X][self.Y] = True
-        self.known[self.X+1][self.Y] = True
-        self.known[self.X-1][self.Y] = True
-        self.known[self.X][self.Y+1] = True
-        self.known[self.X][self.Y-1] = True
-        self.known[self.X-1][self.Y+1] = True
-        self.known[self.X+1][self.Y+1] = True
-        self.known[self.X+1][self.Y-1] = True
-        self.known[self.X-1][self.Y-1] = True
+        self.known[self. x][self. y] = True
+        self.known[self. x+1][self. y] = True
+        self.known[self. x-1][self. y] = True
+        self.known[self. x][self. y+1] = True
+        self.known[self. x][self. y-1] = True
+        self.known[self. x-1][self. y+1] = True
+        self.known[self. x+1][self. y+1] = True
+        self.known[self. x+1][self. y-1] = True
+        self.known[self. x-1][self. y-1] = True
         
         self.draw()
         
