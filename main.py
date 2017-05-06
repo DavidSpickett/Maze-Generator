@@ -61,9 +61,9 @@ class maze(): #The main maze class
         #Do one step of generating a layout.
         
         #Pick a cell and mark it as part of the maze
-        self.layout[self.currentX][self.currentY] = 0
+        self.layout[self.currentX][self.currentY] = FLOOR
         #Mark as visited
-        self.visited[self.currentX][self.currentY] = 1
+        self.visited[self.currentX][self.currentY] = True
         
         self.neighbours = [] #Reset neighbours
         
@@ -107,17 +107,14 @@ class maze(): #The main maze class
             #Cell is above
             if newX == self.currentX and (newY+2) == self.currentY:
                 self.layout[newX][newY+1] = FLOOR
-        
             #Cell is below
-            if newX == self.currentX and (newY-2) == self.currentY:
+            elif newX == self.currentX and (newY-2) == self.currentY:
                 self.layout[newX][newY-1] = FLOOR
-        
             #Cell is left
-            if (newX+2) == self.currentX and newY == self.currentY:
+            elif (newX+2) == self.currentX and newY == self.currentY:
                 self.layout[newX+1][newY] = FLOOR
-        
             #Cell is right
-            if (newX-2) == self.currentX and newY == self.currentY:
+            elif (newX-2) == self.currentX and newY == self.currentY:
                 self.layout[newX-1][newY] = FLOOR
             
             self.currentX = newX
