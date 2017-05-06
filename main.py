@@ -19,10 +19,10 @@ tileSize    = 10
 swidth  = boardWidth*tileSize
 sheight = boardHeight*tileSize
 
-font = pygame.font.Font(pygame.font.get_default_font(),20) #Use default system font
+font = pygame.font.Font(pygame.font.get_default_font(),20)
 
 screen = pygame.display.set_mode((swidth,sheight))
-pygame.display.set_caption('Maze Game')        #Set window title
+pygame.display.set_caption('Maze Game') 
 
 class maze(): #The main maze class
     def __init__(self):
@@ -57,7 +57,12 @@ class maze(): #The main maze class
                     if self.layout[i][j] == 2:
                         screen.fill((0,255,0), (i*tileSize,j*tileSize,tileSize,tileSize))
         
-    def generate(self): #Generates a new layout
+    def generate(self):
+        while not self._generate():
+            pass
+
+    def _generate(self): 
+        #Do one step of generating a layout.
         
         #Pick a cell and mark it as part of the maze
         self.layout[self.currentX][self.currentY] = 0
@@ -71,26 +76,26 @@ class maze(): #The main maze class
             if (self.currentY-2) >= 0:
                 if self.visited[self.currentX][self.currentY-2] == 0: #Above
                     self.neighbours.append((self.currentX,self.currentY-2))
-        except:
+        except IndexError:
             pass
         
         try:
             if (self.currentX-2) >= 0:
                 if self.visited[self.currentX-2][self.currentY] == 0: #Left
                     self.neighbours.append((self.currentX-2,self.currentY))
-        except:
+        except IndexError:
             pass
         
         try:
             if self.visited[self.currentX+2][self.currentY] == 0: #Right
                 self.neighbours.append((self.currentX+2,self.currentY))
-        except:
+        except IndexError:
             pass
         
         try:
             if self.visited[self.currentX][self.currentY+2] == 0: #Down
                 self.neighbours.append((self.currentX,self.currentY+2))
-        except:
+        except IndexError:
             pass
         
         if len(self.neighbours) > 0: #If the current cell has neighbours
@@ -128,20 +133,10 @@ class maze(): #The main maze class
                 del self.stack[len(self.stack)-1]
                 
             if len(self.stack) == 0:
-                return 9
+                return True
 
 class player(): #The player
     def __init__(self):
-        #set = 0
-        #while set == 0:
-        #    randomX = random.randint(0,boardWidth-1)
-        #    randomY = random.randint(0,boardHeight-1)
-        #    
-        #    if newMaze.layout[randomX][randomY] == 0:
-        #        self.X = randomX
-        #        self.Y = randomY #X and Y in terms of the grid
-        #        set = 1
-        
         #This represents a mask showing what the player knows of the maze
         self.known    = [[0 for i in range(boardHeight)] for i in range(boardWidth)]
          
@@ -283,22 +278,17 @@ class mazeSolver(): #Assists in solving the maze
                 del self.stack[len(self.stack)-1]
                
 newMaze = maze()
-done = 0
-while newMaze.generate() != 9: pass
+newMaze.generate()
 playerOne = player()
 solver = mazeSolver()
 newMaze.drawMaze()
- 
-while done == 0: #main loop
-    
+
+done = 0 
+while done == 0:
     newMaze.drawMaze()
     newMaze.oldLayout= newMaze.layout #Save layout
     playerOne.update()
     pygame.display.flip()
     solver.solve()
-    
-    #for i in range(len(playerOne.known)):
-    #    print playerOne.known[i]
-        
-    #deltat = clock.tick(framesPerSecond)
 
+pygame.quit()
