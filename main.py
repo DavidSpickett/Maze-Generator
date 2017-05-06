@@ -34,10 +34,13 @@ PATH_COLOUR = (0,255,0)
 PLAYEER_COLOUR = (255,0,0)
 MAZE_COLOURS = [FLOOR_COLOUR, WALL_COLOUR, PATH_COLOUR]
 
+def mazeArray(value):
+    return [[value]*boardHeight for i in range(boardWidth)]
+
 class maze(): #The main maze class
     def __init__(self):
-        self.layout = [[WALL]*boardHeight for i in range(boardWidth)]
-        self.visited = [[0]*boardHeight for i in range(boardWidth)]
+        self.layout = mazeArray(WALL)
+        self.visited = mazeArray(0)
         self.neighbours = []
         self.stack = []
         
@@ -136,7 +139,7 @@ class maze(): #The main maze class
 class player(): #The player
     def __init__(self):
         #This represents a mask showing what the player knows of the maze
-        self.known = [[0]*boardHeight for i in range(boardWidth)]
+        self.known = mazeArray(0)
         self.X = 0
         self.Y = 0
         
@@ -213,12 +216,12 @@ class mazeSolver(): #Assists in solving the maze
     def __init__(self):
         self.currentX = playerOne.X
         self.currentY = playerOne.Y
-        
         self.neighbours = []
         self.stack = []
         
-    def solve(self): #Call this to find and make next move
-        self.neighbours = [] #Reset neighbours
+    def solve(self): 
+        #Call this to find and make next move
+        self.neighbours = []
         newMaze.layout[self.currentX][self.currentY] = PATH
         
         #Look for open cells    
