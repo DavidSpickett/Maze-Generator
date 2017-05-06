@@ -223,4 +223,4 @@ if __name__ == "__main__":
             new_maze.draw(*new_solver.solve())
             run = checkControls(new_maze, new_solver)
     finally:
-        pygame.quit()
+        pygame.quit() 
