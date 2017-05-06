@@ -156,7 +156,7 @@ class player(): #The player
             screen.fill(FLOOR_COLOUR)
             newMaze.generate()
             playerOne.__init__()
-            solver.__init__()
+            solver.__init__(playerOne.x, playerOne.y)
             
         if key[pygame.K_UP]:
             if self.Y != 0:
@@ -188,7 +188,7 @@ class player(): #The player
                 self.X = mouseX/TILE_SIZE
                 self.Y = mouseY/TILE_SIZE
                 newMaze.ClearPath()
-                solver.__init__()
+                solver.__init__(self.X, self.Y)
 
         return True
     
@@ -213,9 +213,9 @@ class player(): #The player
         self.draw()
         
 class mazeSolver(): #Assists in solving the maze
-    def __init__(self):
-        self.currentX = playerOne.X
-        self.currentY = playerOne.Y
+    def __init__(self, x, y):
+        self.currentX = x
+        self.currentY = y
         self.neighbours = []
         self.stack = []
         
@@ -268,7 +268,7 @@ class mazeSolver(): #Assists in solving the maze
 newMaze = maze()
 newMaze.generate()
 playerOne = player()
-solver = mazeSolver()
+solver = mazeSolver(playerOne.x, playerOne.y)
 newMaze.drawMaze()
 
 try:
