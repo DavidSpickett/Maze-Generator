@@ -1,4 +1,4 @@
-This program generates and fills a maze using a depth first aproach, showing the path it takes and returning to it's starting point once every path has been travelled. Requires Pygame for drawing.
+This program generates and fills a maze using a depth first aproach, showing the path it takes and returning to its starting point once every path has been travelled. Requires Pygame for drawing.
 
 ![MAZE](screenshot_1.png)
 
