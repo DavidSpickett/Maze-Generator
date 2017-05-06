@@ -1,1 +1,0 @@
-This program generates then solves, a maze of given size. Then allows the player to attempt to solve it. It uses PyGame to render the maze.
