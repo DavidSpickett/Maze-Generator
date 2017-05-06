@@ -44,6 +44,8 @@ class maze(): #The main maze class
         self.x = 0
         self.y = 0
 
+        self.generate()
+
     def ClearPath(self):
         for i in range(BOARD_WIDTH):
             for j in range(BOARD_HEIGHT):
@@ -59,10 +61,10 @@ class maze(): #The main maze class
         screen.fill(SOLVER_COLOUR, cellRect(solver_x, solver_y))
         
     def generate(self):
-        while not self._generate():
+        while not self._generate_step():
             pass
 
-    def _generate(self): 
+    def _generate_step(self): 
         #Do one step of generating a layout.
         
         #Pick a cell and mark it as part of the maze
@@ -97,23 +99,23 @@ class maze(): #The main maze class
             self.stack.append((self.x,self.y))
                      
             #Remove the wall between current and chosen cell
-            newX, newY = newCell
+            new_x, new_y = newCell
         
             #Cell is above
-            if newX == self.x and (newY+2) == self.y:
-                self.layout[newX][newY+1] = FLOOR
+            if new_x == self.x and (new_y+2) == self.y:
+                self.layout[new_x][new_y+1] = FLOOR
             #Cell is below
-            elif newX == self.x and (newY-2) == self.y:
-                self.layout[newX][newY-1] = FLOOR
+            elif new_x == self.x and (new_y-2) == self.y:
+                self.layout[new_x][new_y-1] = FLOOR
             #Cell is left
-            elif (newX+2) == self.x and newY == self.y:
-                self.layout[newX+1][newY] = FLOOR
+            elif (new_x+2) == self.x and new_y == self.y:
+                self.layout[new_x+1][new_y] = FLOOR
             #Cell is right
-            elif (newX-2) == self.x and newY == self.y:
-                self.layout[newX-1][newY] = FLOOR
+            elif (new_x-2) == self.x and new_y == self.y:
+                self.layout[new_x-1][new_y] = FLOOR
             
-            self.x = newX
-            self.y = newY
+            self.x = new_x
+            self.y = new_y
             
         else: #Cell has no neighbours
             if self.stack:
@@ -177,9 +179,8 @@ def checkControls(maze):
         return False
         
     if key[pygame.K_TAB]:
-        maze.__init__()
         screen.fill(FLOOR_COLOUR)
-        maze.generate()
+        maze.__init__()
         solver.__init__(maze)
         
     for event in pygame.event.get():
@@ -197,7 +198,6 @@ def checkControls(maze):
     return True
                
 newMaze = maze()
-newMaze.generate()
 solver = mazeSolver(newMaze)
 
 try:
