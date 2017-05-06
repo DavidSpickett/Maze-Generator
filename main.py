@@ -73,31 +73,21 @@ class maze(): #The main maze class
         self.neighbours = [] #Reset neighbours
         
         #Look for unvisited neighbours    
-        try:
-            if (self.y-2) >= 0:
-                if not self.visited[self.x][self.y-2]: #Above
-                    self.neighbours.append((self.x,self.y-2))
-        except IndexError:
-            pass
+        if (self.y-2) >= 0:
+            if not self.visited[self.x][self.y-2]: #Above
+                self.neighbours.append((self.x,self.y-2))
         
-        try:
-            if (self.x-2) >= 0:
-                if not self.visited[self.x-2][self.y]: #Left
-                    self.neighbours.append((self.x-2,self.y))
-        except IndexError:
-            pass
+        if (self.x-2) >= 0:
+            if not self.visited[self.x-2][self.y]: #Left
+                self.neighbours.append((self.x-2,self.y))
         
-        try:
+        if (self.x+2) < BOARD_WIDTH:
             if not self.visited[self.x+2][self.y]: #Right
                 self.neighbours.append((self.x+2,self.y))
-        except IndexError:
-            pass
         
-        try:
+        if (self.y+2) < BOARD_HEIGHT:
             if not self.visited[self.x][self.y+2]: #Down
                 self.neighbours.append((self.x,self.y+2))
-        except IndexError:
-            pass
         
         if self.neighbours:
             #Now choose one randomly
@@ -137,8 +127,8 @@ class maze(): #The main maze class
 class mazeSolver():
     def __init__(self, maze, x=0, y=0):
         #Initial position in the maze given
-        self.currentX = x
-        self.currentY = y
+        self.x = x
+        self.y = y
         self.maze = maze
         self.neighbours = []
         self.stack = []
@@ -146,37 +136,37 @@ class mazeSolver():
     def solve(self): 
         #Call this to find and make next move
         self.neighbours = []
-        self.maze.layout[self.currentX][self.currentY] = PATH
+        self.maze.layout[self.x][self.y] = PATH
         
         #Look for open cells    
-        if (self.currentY-1) >= 0:
-            if self.maze.layout[self.currentX][self.currentY-1] == FLOOR: #Above
-                self.neighbours.append((self.currentX,self.currentY-1))
+        if (self.y-1) >= 0:
+            if self.maze.layout[self.x][self.y-1] == FLOOR: #Above
+                self.neighbours.append((self.x,self.y-1))
     
-        if (self.currentX-1) >= 0:
-            if self.maze.layout[self.currentX-1][self.currentY] == FLOOR: #Left
-                self.neighbours.append((self.currentX-1,self.currentY))
+        if (self.x-1) >= 0:
+            if self.maze.layout[self.x-1][self.y] == FLOOR: #Left
+                self.neighbours.append((self.x-1,self.y))
         
-        if (self.currentX < BOARD_WIDTH):
-            if self.maze.layout[self.currentX+1][self.currentY] == FLOOR: #Right
-                self.neighbours.append((self.currentX+1,self.currentY))
+        if (self.x < BOARD_WIDTH):
+            if self.maze.layout[self.x+1][self.y] == FLOOR: #Right
+                self.neighbours.append((self.x+1,self.y))
 
-        if (self.currentY < BOARD_HEIGHT):
-            if self.maze.layout[self.currentX][self.currentY+1] == FLOOR: #Down
-                self.neighbours.append((self.currentX,self.currentY+1))
+        if (self.y < BOARD_HEIGHT):
+            if self.maze.layout[self.x][self.y+1] == FLOOR: #Down
+                self.neighbours.append((self.x,self.y+1))
         
         if self.neighbours: #If we found some neighbours that are open
             newX, newY = self.neighbours[0] #Take the first option
-            self.stack.append((self.currentX,self.currentY)) #Save old position to stack
-            self.currentX = newX
-            self.currentY = newY
+            self.stack.append((self.x,self.y)) #Save old position to stack
+            self.x = newX
+            self.y = newY
             
         else: #Cell has no open neighbours
             if self.stack:
                 #Go back to the previous current cell
-                self.currentX, self.currentY = self.stack.pop()
+                self.x, self.y = self.stack.pop()
 
-        return self.currentX, self.currentY
+        return self.x, self.y
 
 def checkControls(maze): 
     #check player controls (return False if we need to quit)
@@ -197,7 +187,7 @@ def checkControls(maze):
             mouse_x, mouse_y = pygame.mouse.get_pos()
             mouse_x /= TILE_SIZE
             mouse_y /= TILE_SIZE
-            
+
             if (newMaze.layout[mouse_x][mouse_y] != WALL):
                 maze.ClearPath()
                 solver.__init__(maze, x=mouse_x, y=mouse_y)
