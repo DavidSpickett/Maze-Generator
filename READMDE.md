@@ -12,6 +12,9 @@ Examples
 Usage
 -----
 
+Press Tab to generate a new maze or click on a position in the current maze to restart solving from
+that point. Use Esc or the standard window controls to exit.
+
 The optional arguments are:
 
   --width WIDTH         
