@@ -9,9 +9,6 @@ from pygame.locals import *
 
 pygame.init()
 
-clock = pygame.time.Clock() #Clock to limit frames per second
-framesPerSecond = 30        #We want to run the game at 30fps
-
 BOARD_WIDTH  = 100
 BOARD_HEIGHT = 50
 TILE_SIZE    = 10
@@ -20,7 +17,7 @@ SCREEN_WIDTH  = BOARD_WIDTH*TILE_SIZE
 SCREEN_HEIGHT = BOARD_HEIGHT*TILE_SIZE
 
 screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
-pygame.display.set_caption('Maze Game')
+pygame.display.set_caption('Maze Solver')
 
 FLOOR = 0 
 WALL  = 1
