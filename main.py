@@ -18,7 +18,7 @@ SOLVER_COLOUR = (255,0,0)
 MAZE_COLOURS = [FLOOR_COLOUR, WALL_COLOUR, PATH_COLOUR]
 
 def mazeArray(value, width, height):
-    return [[value]*width for i in range(height)]
+    return [[value]*height for i in range(width)]
 
 def cellRect(x, y, tile_size):
     return (x*tile_size, y*tile_size, tile_size, tile_size)
@@ -147,11 +147,11 @@ class mazeSolver():
             if self.maze.layout[self.x-1][self.y] == FLOOR: #Left
                 self.neighbours.append((self.x-1,self.y))
         
-        if (self.x < self.maze.width):
+        if (self.x+1) < self.maze.width:
             if self.maze.layout[self.x+1][self.y] == FLOOR: #Right
                 self.neighbours.append((self.x+1,self.y))
 
-        if (self.y < self.maze.height):
+        if (self.y+1) < self.maze.height:
             if self.maze.layout[self.x][self.y+1] == FLOOR: #Down
                 self.neighbours.append((self.x,self.y+1))
         
@@ -207,8 +207,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    width_cells = max(2, args.width)
-    height_cells = max(2, args.height)
+    width_cells = max(1, args.width)
+    height_cells = max(1, args.height)
     tile_size = max(1, args.tile_size)
 
     pygame.init()
