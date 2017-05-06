@@ -26,11 +26,14 @@ PATH  = 2
 FLOOR_COLOUR = (0,0,0)
 WALL_COLOUR = (255,255,255)
 PATH_COLOUR = (0,255,0)
-PLAYEER_COLOUR = (255,0,0)
+SOLVER_COLOUR = (255,0,0)
 MAZE_COLOURS = [FLOOR_COLOUR, WALL_COLOUR, PATH_COLOUR]
 
 def mazeArray(value):
     return [[value]*BOARD_HEIGHT for i in range(BOARD_WIDTH)]
+
+def cellRect(x, y):
+        return (x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
 class maze(): #The main maze class
     def __init__(self):
@@ -47,11 +50,13 @@ class maze(): #The main maze class
                 if self.layout[i][j] == PATH:
                     self.layout[i][j] = FLOOR
         
-    def drawMaze(self):
+    def draw(self, solver_x, solver_y):
         for i in range(BOARD_WIDTH):
             for j in range(BOARD_HEIGHT):
                 cell_type = self.layout[i][j]
-                screen.fill(MAZE_COLOURS[cell_type], (i*TILE_SIZE,j*TILE_SIZE,TILE_SIZE,TILE_SIZE))
+                screen.fill(MAZE_COLOURS[cell_type], cellRect(i, j))
+        
+        screen.fill(SOLVER_COLOUR, cellRect(solver_x, solver_y))
         
     def generate(self):
         while not self._generate():
@@ -128,112 +133,36 @@ class maze(): #The main maze class
             if not self.stack:
                 #Generation has finished
                 return True
-
-class player(): #The player
-    def __init__(self):
-        #This represents a mask showing what the player knows of the maze
-        self.known = mazeArray(0)
-        self.x = 0
-        self.y = 0
         
-    def checkControls(self): 
-        #check player controls (return False if we need to quit)
-        pygame.event.pump()    
-        key = pygame.key.get_pressed()
-        
-        if key[pygame.K_ESCAPE]:
-            return False
-            
-        if key[pygame.K_TAB]:
-            newMaze.__init__()
-            screen.fill(FLOOR_COLOUR)
-            newMaze.generate()
-            playerOne.__init__()
-            solver.__init__(playerOne.x, playerOne.y)
-            
-        if key[pygame.K_UP]:
-            if self.y != 0:
-                if newMaze.layout[self.x][self.y-1] == FLOOR or newMaze.layout[self.x][self.y-1] == PATH:
-                    newMaze.layout[self.x][self.y] = PATH
-                    self.y -= 1
-        
-        if key[pygame.K_DOWN]:
-            if self.y != (BOARD_HEIGHT-1):
-                if newMaze.layout[self.x][self.y+1] == FLOOR or newMaze.layout[self.x][self.y+1] == PATH:
-                    newMaze.layout[self.x][self.y] = PATH
-                    self.y += 1
-        
-        if key[pygame.K_LEFT]:
-            if self.x != 0:
-                if newMaze.layout[self.x-1][self.y] == FLOOR or newMaze.layout[self.x-1][self.y] == PATH:
-                    newMaze.layout[self.x][self.y] = PATH
-                    self.x -= 1
-        
-        if key[pygame.K_RIGHT]:
-            if self.Y != (BOARD_WIDTH-1):
-                if newMaze.layout[self.x+1][self.y] == FLOOR or newMaze.layout[self.x+1][self.y] == PATH:
-                    newMaze.layout[self.x][self.y] = PATH
-                    self.x += 1
-                    
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                mouseX,mouseY = pygame.mouse.get_pos()
-                self.x = mouseX/TILE_SIZE
-                self.y = mouseY/TILE_SIZE
-                newMaze.ClearPath()
-                solver.__init__(self.x, self.y)
-            elif event.type == pygame.QUIT:
-                return False
-
-        return True
-    
-    def draw(self):
-        screen.fill(PLAYEER_COLOUR, self.TileRect())
-        
-    def TileRect(self):
-        return (self.x*TILE_SIZE, self.y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
-
-    def update(self):
-        #Note parts of the maze we have discovered
-        self.known[self. x][self. y] = True
-        self.known[self. x+1][self. y] = True
-        self.known[self. x-1][self. y] = True
-        self.known[self. x][self. y+1] = True
-        self.known[self. x][self. y-1] = True
-        self.known[self. x-1][self. y+1] = True
-        self.known[self. x+1][self. y+1] = True
-        self.known[self. x+1][self. y-1] = True
-        self.known[self. x-1][self. y-1] = True
-        
-        self.draw()
-        
-class mazeSolver(): #Assists in solving the maze
-    def __init__(self, x, y):
+class mazeSolver():
+    def __init__(self, maze, x=0, y=0):
+        #Initial position in the maze given
         self.currentX = x
         self.currentY = y
+        self.maze = maze
         self.neighbours = []
         self.stack = []
         
     def solve(self): 
         #Call this to find and make next move
         self.neighbours = []
-        newMaze.layout[self.currentX][self.currentY] = PATH
+        self.maze.layout[self.currentX][self.currentY] = PATH
         
         #Look for open cells    
         if (self.currentY-1) >= 0:
-            if newMaze.layout[self.currentX][self.currentY-1] == FLOOR: #Above
+            if self.maze.layout[self.currentX][self.currentY-1] == FLOOR: #Above
                 self.neighbours.append((self.currentX,self.currentY-1))
     
         if (self.currentX-1) >= 0:
-            if newMaze.layout[self.currentX-1][self.currentY] == FLOOR: #Left
+            if self.maze.layout[self.currentX-1][self.currentY] == FLOOR: #Left
                 self.neighbours.append((self.currentX-1,self.currentY))
         
         if (self.currentX < BOARD_WIDTH):
-            if newMaze.layout[self.currentX+1][self.currentY] == FLOOR: #Right
+            if self.maze.layout[self.currentX+1][self.currentY] == FLOOR: #Right
                 self.neighbours.append((self.currentX+1,self.currentY))
 
         if (self.currentY < BOARD_HEIGHT):
-            if newMaze.layout[self.currentX][self.currentY+1] == FLOOR: #Down
+            if self.maze.layout[self.currentX][self.currentY+1] == FLOOR: #Down
                 self.neighbours.append((self.currentX,self.currentY+1))
         
         if self.neighbours: #If we found some neighbours that are open
@@ -241,28 +170,53 @@ class mazeSolver(): #Assists in solving the maze
             self.stack.append((self.currentX,self.currentY)) #Save old position to stack
             self.currentX = newX
             self.currentY = newY
-            playerOne.X = self.currentX
-            playerOne.Y = self.currentY
             
         else: #Cell has no open neighbours
             if self.stack:
                 #Go back to the previous current cell
-                self.currentX, self.currentY = self.stack.pop() 
-                playerOne.X, playerOne.Y = self.currentX, self.currentY
+                self.currentX, self.currentY = self.stack.pop()
+
+        return self.currentX, self.currentY
+
+def checkControls(maze): 
+    #check player controls (return False if we need to quit)
+    pygame.event.pump()    
+    key = pygame.key.get_pressed()
+    
+    if key[pygame.K_ESCAPE]:
+        return False
+        
+    if key[pygame.K_TAB]:
+        maze.__init__()
+        screen.fill(FLOOR_COLOUR)
+        maze.generate()
+        solver.__init__(maze)
+        
+    for event in pygame.event.get():
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            mouse_x /= TILE_SIZE
+            mouse_y /= TILE_SIZE
+            
+            if (newMaze.layout[mouse_x][mouse_y] != WALL):
+                maze.ClearPath()
+                solver.__init__(maze, x=mouse_x, y=mouse_y)
+        elif event.type == pygame.QUIT:
+            return False
+
+    return True
                
 newMaze = maze()
 newMaze.generate()
-playerOne = player()
-solver = mazeSolver(playerOne.x, playerOne.y)
-newMaze.drawMaze()
+solver = mazeSolver(newMaze)
 
 try:
     run = True 
+    solver_x, solver_y = 0, 0
     while run:
-        newMaze.drawMaze()
-        run = playerOne.checkControls()
-        playerOne.update()
+        newMaze.draw(solver_x, solver_y)
+        run = checkControls(newMaze)
         pygame.display.flip()
-        solver.solve()
+        solver_x, solver_y = solver.solve()
 finally:
     pygame.quit()
