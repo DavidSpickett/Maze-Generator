@@ -14,10 +14,10 @@ framesPerSecond = 30        #We want to run the game at 30fps
 
 boardWidth  = 100
 boardHeight = 50
-tileSize    = 10
+TILE_SIZE    = 10
 
-swidth  = boardWidth*tileSize
-sheight = boardHeight*tileSize
+swidth  = boardWidth*TILE_SIZE
+sheight = boardHeight*TILE_SIZE
 
 font = pygame.font.Font(pygame.font.get_default_font(),20)
 
@@ -31,7 +31,8 @@ PATH  = 2
 FLOOR_COLOUR = (0,0,0)
 WALL_COLOUR = (255,255,255)
 PATH_COLOUR = (0,255,0)
-COLOURS = [FLOOR_COLOUR, WALL_COLOUR, PATH_COLOUR]
+PLAYEER_COLOUR = (255,0,0)
+MAZE_COLOURS = [FLOOR_COLOUR, WALL_COLOUR, PATH_COLOUR]
 
 class maze(): #The main maze class
     def __init__(self):
@@ -51,7 +52,7 @@ class maze(): #The main maze class
             for j in range(boardHeight):
                 cell_type = self.layout[i][j]
                 if (cell_type != self.oldLayout[i][j] or (i == playerOne.oldX and j == playerOne.oldY)):
-                    screen.fill(COLOURS[cell_type], (i*tileSize,j*tileSize,tileSize,tileSize))
+                    screen.fill(MAZE_COLOURS[cell_type], (i*TILE_SIZE,j*TILE_SIZE,TILE_SIZE,TILE_SIZE))
         
     def generate(self):
         while not self._generate():
@@ -149,7 +150,7 @@ class player(): #The player
             
         if key[pygame.K_TAB]:
             newMaze.__init__()
-            screen.fill((0,0,0))
+            screen.fill(FLOOR_COLOUR)
             newMaze.generate()
             playerOne.__init__()
             solver.__init__()
@@ -190,26 +191,28 @@ class player(): #The player
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouseX,mouseY = pygame.mouse.get_pos()
                 solver.__init__()
-                self.X = mouseX/tileSize
-                self.Y = mouseY/tileSize
+                self.X = mouseX/TILE_SIZE
+                self.Y = mouseY/TILE_SIZE
 
         return True
     
     def draw(self): #draw the player
-        screen.fill((255,0,0), (self.X*tileSize,self.Y*tileSize,tileSize,tileSize))
+        screen.fill(PLAYEER_COLOUR, self.TileRect())
         
-    def update(self): #Combine all the previous
-        
+    def TileRect(self):
+        return (self.X*TILE_SIZE, self.Y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+
+    def update(self):
         #Note parts of the maze we have discovered
-        self.known[self.X][self.Y] = 1
-        self.known[self.X+1][self.Y] = 1
-        self.known[self.X-1][self.Y] = 1
-        self.known[self.X][self.Y+1] = 1
-        self.known[self.X][self.Y-1] = 1
-        self.known[self.X-1][self.Y+1] = 1
-        self.known[self.X+1][self.Y+1] = 1
-        self.known[self.X+1][self.Y-1] = 1
-        self.known[self.X-1][self.Y-1] = 1
+        self.known[self.X][self.Y] = True
+        self.known[self.X+1][self.Y] = True
+        self.known[self.X-1][self.Y] = True
+        self.known[self.X][self.Y+1] = True
+        self.known[self.X][self.Y-1] = True
+        self.known[self.X-1][self.Y+1] = True
+        self.known[self.X+1][self.Y+1] = True
+        self.known[self.X+1][self.Y-1] = True
+        self.known[self.X-1][self.Y-1] = True
         
         self.draw()
         
@@ -277,13 +280,14 @@ playerOne = player()
 solver = mazeSolver()
 newMaze.drawMaze()
 
-run = True 
-while run:
-    newMaze.drawMaze()
-    newMaze.oldLayout= newMaze.layout #Save layout
-    run = playerOne.checkControls()
-    playerOne.update()
-    pygame.display.flip()
-    solver.solve()
-
-pygame.quit()
+try:
+    run = True 
+    while run:
+        newMaze.drawMaze()
+        newMaze.oldLayout= newMaze.layout #Save layout
+        run = playerOne.checkControls()
+        playerOne.update()
+        pygame.display.flip()
+        solver.solve()
+finally:
+    pygame.quit()
