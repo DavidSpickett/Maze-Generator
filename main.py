@@ -191,6 +191,8 @@ class player(): #The player
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouseX,mouseY = pygame.mouse.get_pos()
                 solver.__init__()
+                playerOne.__init__()
+                screen.fill(FLOOR_COLOUR)
                 self.X = mouseX/TILE_SIZE
                 self.Y = mouseY/TILE_SIZE
 
