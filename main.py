@@ -7,8 +7,6 @@ Created on Aug 5, 2010
 import pygame, random, argparse
 from pygame.locals import *
 
-TILE_SIZE    = 10
-
 FLOOR = 0 
 WALL  = 1
 PATH  = 2
@@ -22,24 +20,25 @@ MAZE_COLOURS = [FLOOR_COLOUR, WALL_COLOUR, PATH_COLOUR]
 def mazeArray(value, width, height):
     return [[value]*width for i in range(height)]
 
-def cellRect(x, y):
-    return (x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+def cellRect(x, y, tile_size):
+    return (x*tile_size, y*tile_size, tile_size, tile_size)
 
 class maze(): #The main maze class
-    def __init__(self, width, height):
+    def __init__(self, width, height, tile_size):
         self.layout = mazeArray(WALL, width, height)
         self.visited = mazeArray(0, width, height)
         self.neighbours = []
         self.stack = []
         self.width = width
         self.height = height
+        self.tile_size = tile_size
         self.x = 0
         self.y = 0
 
         self.generate()
     
     def Regenerate(self):
-        self.__init__(self.width, self.height)
+        self.__init__(self.width, self.height, self.tile_size)
 
     def ClearPath(self):
         for i in range(self.width):
@@ -51,9 +50,9 @@ class maze(): #The main maze class
         for i in range(self.width):
             for j in range(self.height):
                 cell_type = self.layout[i][j]
-                screen.fill(MAZE_COLOURS[cell_type], cellRect(i, j))
+                screen.fill(MAZE_COLOURS[cell_type], cellRect(i, j, self.tile_size))
         
-        screen.fill(SOLVER_COLOUR, cellRect(solver_x, solver_y))
+        screen.fill(SOLVER_COLOUR, cellRect(solver_x, solver_y, self.tile_size))
         pygame.display.flip()
         
     def generate(self):
@@ -185,8 +184,8 @@ def checkControls(maze, solver):
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_x, mouse_y = pygame.mouse.get_pos()
-            mouse_x /= TILE_SIZE
-            mouse_y /= TILE_SIZE
+            mouse_x /= maze.tile_size
+            mouse_y /= maze.tile_size
 
             if (maze.layout[mouse_x][mouse_y] != WALL):
                 maze.ClearPath()
@@ -203,18 +202,21 @@ if __name__ == "__main__":
                         help='Width (in tiles) of the maze generated.')
     parser.add_argument('--height', action="store", dest="height", type=int, default=50,
                         help='Height (in tiles) of the maze generated.')
+    parser.add_argument('--tile-size', action="store", dest="tile_size", type=int, default=10,
+                        help='Size in pixels of one maze cell. (10 = 10 by 10 square)')
 
     args = parser.parse_args()
 
     width_cells = max(2, args.width)
     height_cells = max(2, args.height)
+    tile_size = max(1, args.tile_size)
 
     pygame.init()
-    screen = pygame.display.set_mode((width_cells*TILE_SIZE,height_cells*TILE_SIZE))
+    screen = pygame.display.set_mode((width_cells*tile_size,height_cells*tile_size))
     pygame.display.set_caption('Maze Solver')
 
     try:
-        new_maze = maze(width_cells, height_cells)
+        new_maze = maze(width_cells, height_cells, tile_size)
         new_solver = mazeSolver(new_maze)
         run = True
         while run:
