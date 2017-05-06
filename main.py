@@ -59,6 +59,7 @@ class maze(): #The main maze class
                 screen.fill(MAZE_COLOURS[cell_type], cellRect(i, j))
         
         screen.fill(SOLVER_COLOUR, cellRect(solver_x, solver_y))
+        pygame.display.flip()
         
     def generate(self):
         while not self._generate_step():
@@ -196,17 +197,14 @@ def checkControls(maze):
             return False
 
     return True
-               
-newMaze = maze()
-solver = mazeSolver(newMaze)
 
 try:
+    newMaze = maze()
+    solver = mazeSolver(newMaze)
     run = True 
     solver_x, solver_y = 0, 0
     while run:
-        newMaze.draw(solver_x, solver_y)
+        newMaze.draw(*solver.solve())
         run = checkControls(newMaze)
-        pygame.display.flip()
-        solver_x, solver_y = solver.solve()
 finally:
     pygame.quit()
