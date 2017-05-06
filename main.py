@@ -4,20 +4,10 @@ Created on Aug 5, 2010
 @author: davidspickett
 '''
 
-import pygame, random
+import pygame, random, argparse
 from pygame.locals import *
 
-pygame.init()
-
-BOARD_WIDTH  = 100
-BOARD_HEIGHT = 50
 TILE_SIZE    = 10
-
-SCREEN_WIDTH  = BOARD_WIDTH*TILE_SIZE
-SCREEN_HEIGHT = BOARD_HEIGHT*TILE_SIZE
-
-screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
-pygame.display.set_caption('Maze Solver')
 
 FLOOR = 0 
 WALL  = 1
@@ -29,32 +19,37 @@ PATH_COLOUR = (0,255,0)
 SOLVER_COLOUR = (255,0,0)
 MAZE_COLOURS = [FLOOR_COLOUR, WALL_COLOUR, PATH_COLOUR]
 
-def mazeArray(value):
-    return [[value]*BOARD_HEIGHT for i in range(BOARD_WIDTH)]
+def mazeArray(value, width, height):
+    return [[value]*width for i in range(height)]
 
 def cellRect(x, y):
-        return (x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
+    return (x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
 
 class maze(): #The main maze class
-    def __init__(self):
-        self.layout = mazeArray(WALL)
-        self.visited = mazeArray(0)
+    def __init__(self, width, height):
+        self.layout = mazeArray(WALL, width, height)
+        self.visited = mazeArray(0, width, height)
         self.neighbours = []
         self.stack = []
+        self.width = width
+        self.height = height
         self.x = 0
         self.y = 0
 
         self.generate()
+    
+    def Regenerate(self):
+        self.__init__(self.width, self.height)
 
     def ClearPath(self):
-        for i in range(BOARD_WIDTH):
-            for j in range(BOARD_HEIGHT):
+        for i in range(self.width):
+            for j in range(self.height):
                 if self.layout[i][j] == PATH:
                     self.layout[i][j] = FLOOR
         
     def draw(self, solver_x, solver_y):
-        for i in range(BOARD_WIDTH):
-            for j in range(BOARD_HEIGHT):
+        for i in range(self.width):
+            for j in range(self.height):
                 cell_type = self.layout[i][j]
                 screen.fill(MAZE_COLOURS[cell_type], cellRect(i, j))
         
@@ -84,11 +79,11 @@ class maze(): #The main maze class
             if not self.visited[self.x-2][self.y]: #Left
                 self.neighbours.append((self.x-2,self.y))
         
-        if (self.x+2) < BOARD_WIDTH:
+        if (self.x+2) < self.width:
             if not self.visited[self.x+2][self.y]: #Right
                 self.neighbours.append((self.x+2,self.y))
         
-        if (self.y+2) < BOARD_HEIGHT:
+        if (self.y+2) < self.height:
             if not self.visited[self.x][self.y+2]: #Down
                 self.neighbours.append((self.x,self.y+2))
         
@@ -135,6 +130,9 @@ class mazeSolver():
         self.maze = maze
         self.neighbours = []
         self.stack = []
+
+    def Reset(self, maze, x=0, y=0):
+        self.__init__(maze, x=x, y=y)
         
     def solve(self): 
         #Call this to find and make next move
@@ -150,11 +148,11 @@ class mazeSolver():
             if self.maze.layout[self.x-1][self.y] == FLOOR: #Left
                 self.neighbours.append((self.x-1,self.y))
         
-        if (self.x < BOARD_WIDTH):
+        if (self.x < self.maze.width):
             if self.maze.layout[self.x+1][self.y] == FLOOR: #Right
                 self.neighbours.append((self.x+1,self.y))
 
-        if (self.y < BOARD_HEIGHT):
+        if (self.y < self.maze.height):
             if self.maze.layout[self.x][self.y+1] == FLOOR: #Down
                 self.neighbours.append((self.x,self.y+1))
         
@@ -171,7 +169,7 @@ class mazeSolver():
 
         return self.x, self.y
 
-def checkControls(maze): 
+def checkControls(maze, solver): 
     #check player controls (return False if we need to quit)
     pygame.event.pump()    
     key = pygame.key.get_pressed()
@@ -181,8 +179,8 @@ def checkControls(maze):
         
     if key[pygame.K_TAB]:
         screen.fill(FLOOR_COLOUR)
-        maze.__init__()
-        solver.__init__(maze)
+        maze.Regenerate()
+        solver.Reset(maze)
         
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -190,20 +188,37 @@ def checkControls(maze):
             mouse_x /= TILE_SIZE
             mouse_y /= TILE_SIZE
 
-            if (newMaze.layout[mouse_x][mouse_y] != WALL):
+            if (maze.layout[mouse_x][mouse_y] != WALL):
                 maze.ClearPath()
-                solver.__init__(maze, x=mouse_x, y=mouse_y)
+                solver.Reset(maze, x=mouse_x, y=mouse_y)
         elif event.type == pygame.QUIT:
             return False
 
     return True
 
-try:
-    newMaze = maze()
-    solver = mazeSolver(newMaze)
-    run = True
-    while run:
-        newMaze.draw(*solver.solve())
-        run = checkControls(newMaze)
-finally:
-    pygame.quit()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Run the Maze Generator/Solver')
+
+    parser.add_argument('--width', action="store", dest="width", type=int, default=50,
+                        help='Width (in tiles) of the maze generated.')
+    parser.add_argument('--height', action="store", dest="height", type=int, default=50,
+                        help='Height (in tiles) of the maze generated.')
+
+    args = parser.parse_args()
+
+    width_cells = max(2, args.width)
+    height_cells = max(2, args.height)
+
+    pygame.init()
+    screen = pygame.display.set_mode((width_cells*TILE_SIZE,height_cells*TILE_SIZE))
+    pygame.display.set_caption('Maze Solver')
+
+    try:
+        new_maze = maze(width_cells, height_cells)
+        new_solver = mazeSolver(new_maze)
+        run = True
+        while run:
+            new_maze.draw(*new_solver.solve())
+            run = checkControls(new_maze, new_solver)
+    finally:
+        pygame.quit()
