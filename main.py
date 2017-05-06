@@ -37,8 +37,6 @@ MAZE_COLOURS = [FLOOR_COLOUR, WALL_COLOUR, PATH_COLOUR]
 class maze(): #The main maze class
     def __init__(self):
         self.layout = [[WALL]*boardHeight for i in range(boardWidth)]
-        self.oldLayout = [[FLOOR]*boardHeight for i in range(boardWidth)]
-        
         self.visited = [[0]*boardHeight for i in range(boardWidth)]
         self.neighbours = []
         self.stack = []
@@ -46,13 +44,18 @@ class maze(): #The main maze class
         #Used for generation
         self.currentX = 0
         self.currentY = 0
+
+    def ClearPath(self):
+        for i in range(boardWidth):
+            for j in range(boardHeight):
+                if self.layout[i][j] == PATH:
+                    self.layout[i][j] = FLOOR
         
     def drawMaze(self):
         for i in range(boardWidth):
             for j in range(boardHeight):
                 cell_type = self.layout[i][j]
-                if (cell_type != self.oldLayout[i][j] or (i == playerOne.oldX and j == playerOne.oldY)):
-                    screen.fill(MAZE_COLOURS[cell_type], (i*TILE_SIZE,j*TILE_SIZE,TILE_SIZE,TILE_SIZE))
+                screen.fill(MAZE_COLOURS[cell_type], (i*TILE_SIZE,j*TILE_SIZE,TILE_SIZE,TILE_SIZE))
         
     def generate(self):
         while not self._generate():
@@ -190,11 +193,10 @@ class player(): #The player
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouseX,mouseY = pygame.mouse.get_pos()
-                solver.__init__()
-                playerOne.__init__()
-                screen.fill(FLOOR_COLOUR)
                 self.X = mouseX/TILE_SIZE
                 self.Y = mouseY/TILE_SIZE
+                newMaze.ClearPath()
+                solver.__init__()
 
         return True
     
@@ -227,7 +229,6 @@ class mazeSolver(): #Assists in solving the maze
         self.stack = []
         
     def solve(self): #Call this to find and make next move
-        
         self.neighbours = [] #Reset neighbours
         newMaze.layout[self.currentX][self.currentY] = PATH
         
@@ -286,7 +287,6 @@ try:
     run = True 
     while run:
         newMaze.drawMaze()
-        newMaze.oldLayout= newMaze.layout #Save layout
         run = playerOne.checkControls()
         playerOne.update()
         pygame.display.flip()
