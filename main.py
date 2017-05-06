@@ -22,40 +22,36 @@ sheight = boardHeight*tileSize
 font = pygame.font.Font(pygame.font.get_default_font(),20)
 
 screen = pygame.display.set_mode((swidth,sheight))
-pygame.display.set_caption('Maze Game') 
+pygame.display.set_caption('Maze Game')
+
+FLOOR = 0 
+WALL  = 1
+PATH  = 2
+
+FLOOR_COLOUR = (0,0,0)
+WALL_COLOUR = (255,255,255)
+PATH_COLOUR = (0,255,0)
+COLOURS = [FLOOR_COLOUR, WALL_COLOUR, PATH_COLOUR]
 
 class maze(): #The main maze class
     def __init__(self):
-        self.layout = [[1 for i in range(boardHeight)] for i in range(boardWidth)]
-        #1 is a wall, 0 is floor
-        self.oldLayout = [[0 for i in range(boardHeight)] for i in range(boardWidth)]
+        self.layout = [[WALL]*boardHeight for i in range(boardWidth)]
+        self.oldLayout = [[FLOOR]*boardHeight for i in range(boardWidth)]
         
-        #Init the visited list
-        self.visited = [[0 for i in range(boardHeight)] for i in range(boardWidth)]
-        
-        #Init the neighbours list
+        self.visited = [[0]*boardHeight for i in range(boardWidth)]
         self.neighbours = []
-        
-        #Stack
         self.stack = []
         
         #Used for generation
         self.currentX = 0
         self.currentY = 0
         
-    def drawMaze(self): #Draws out the maze to the screen
-        global screen, tileSize, boardWidth, boardHeight
-        
+    def drawMaze(self):
         for i in range(boardWidth):
             for j in range(boardHeight):
-                if (self.layout[i][j] != self.oldLayout[i][j] or (i == playerOne.oldX and j == playerOne.oldY)):
-                    #or playerOne.known[i][j] == 1):
-                    if self.layout[i][j] == 0:
-                        screen.fill((0,0,0), (i*tileSize,j*tileSize,tileSize,tileSize))
-                    if self.layout[i][j] == 1:
-                        screen.fill((255,255,255), (i*tileSize,j*tileSize,tileSize,tileSize))
-                    if self.layout[i][j] == 2:
-                        screen.fill((0,255,0), (i*tileSize,j*tileSize,tileSize,tileSize))
+                cell_type = self.layout[i][j]
+                if (cell_type != self.oldLayout[i][j] or (i == playerOne.oldX and j == playerOne.oldY)):
+                    screen.fill(COLOURS[cell_type], (i*tileSize,j*tileSize,tileSize,tileSize))
         
     def generate(self):
         while not self._generate():
@@ -74,31 +70,31 @@ class maze(): #The main maze class
         #Look for unvisited neighbours    
         try:
             if (self.currentY-2) >= 0:
-                if self.visited[self.currentX][self.currentY-2] == 0: #Above
+                if not self.visited[self.currentX][self.currentY-2]: #Above
                     self.neighbours.append((self.currentX,self.currentY-2))
         except IndexError:
             pass
         
         try:
             if (self.currentX-2) >= 0:
-                if self.visited[self.currentX-2][self.currentY] == 0: #Left
+                if not self.visited[self.currentX-2][self.currentY]: #Left
                     self.neighbours.append((self.currentX-2,self.currentY))
         except IndexError:
             pass
         
         try:
-            if self.visited[self.currentX+2][self.currentY] == 0: #Right
+            if not self.visited[self.currentX+2][self.currentY]: #Right
                 self.neighbours.append((self.currentX+2,self.currentY))
         except IndexError:
             pass
         
         try:
-            if self.visited[self.currentX][self.currentY+2] == 0: #Down
+            if not self.visited[self.currentX][self.currentY+2]: #Down
                 self.neighbours.append((self.currentX,self.currentY+2))
         except IndexError:
             pass
         
-        if len(self.neighbours) > 0: #If the current cell has neighbours
+        if self.neighbours:
             #Now choose one randomly
             newCell = self.neighbours[random.randint(0,len(self.neighbours)-1)]
         
@@ -110,35 +106,35 @@ class maze(): #The main maze class
         
             #Cell is above
             if newX == self.currentX and (newY+2) == self.currentY:
-                self.layout[newX][newY+1] = 0 #Remove the wall
+                self.layout[newX][newY+1] = FLOOR
         
             #Cell is below
             if newX == self.currentX and (newY-2) == self.currentY:
-                self.layout[newX][newY-1] = 0
+                self.layout[newX][newY-1] = FLOOR
         
             #Cell is left
             if (newX+2) == self.currentX and newY == self.currentY:
-                self.layout[newX+1][newY] = 0
+                self.layout[newX+1][newY] = FLOOR
         
             #Cell is right
             if (newX-2) == self.currentX and newY == self.currentY:
-                self.layout[newX-1][newY] = 0
+                self.layout[newX-1][newY] = FLOOR
             
             self.currentX = newX
             self.currentY = newY
             
         else: #Cell has no neighbours
-            if len(self.stack) > 0:
-                self.currentX, self.currentY = self.stack[len(self.stack)-1] #Go back to the previous current cell
-                del self.stack[len(self.stack)-1]
+            if self.stack:
+                self.currentX, self.currentY = self.stack[-1] #Go back to the previous current cell
+                self.stack.pop()
                 
-            if len(self.stack) == 0:
+            if not self.stack:
                 return True
 
 class player(): #The player
     def __init__(self):
         #This represents a mask showing what the player knows of the maze
-        self.known    = [[0 for i in range(boardHeight)] for i in range(boardWidth)]
+        self.known = [[0 for i in range(boardHeight)] for i in range(boardWidth)]
          
         self.X = 0
         self.Y = 0       
@@ -157,38 +153,38 @@ class player(): #The player
         if key[pygame.K_TAB]:
             newMaze.__init__()
             screen.fill((0,0,0))
-            while newMaze.generate() != 9: pass
+            newMaze.generate()
             playerOne.__init__()
             solver.__init__()
             
         if key[pygame.K_UP]:
             if self.Y != 0:
-                if newMaze.layout[self.X][self.Y-1] == 0 or newMaze.layout[self.X][self.Y-1] == 2:
-                    newMaze.layout[self.X][self.Y] = 2
+                if newMaze.layout[self.X][self.Y-1] == FLOOR or newMaze.layout[self.X][self.Y-1] == PATH:
+                    newMaze.layout[self.X][self.Y] = PATH
                     self.oldX = self.X
                     self.oldY = self.Y
                     self.Y -= 1
         
         if key[pygame.K_DOWN]:
             if self.Y != (boardHeight-1):
-                if newMaze.layout[self.X][self.Y+1] == 0 or newMaze.layout[self.X][self.Y+1] == 2:
-                    newMaze.layout[self.X][self.Y] = 2
+                if newMaze.layout[self.X][self.Y+1] == FLOOR or newMaze.layout[self.X][self.Y+1] == PATH:
+                    newMaze.layout[self.X][self.Y] = PATH
                     self.oldX = self.X
                     self.oldY = self.Y
                     self.Y += 1
         
         if key[pygame.K_LEFT]:
             if self.X != 0:
-                if newMaze.layout[self.X-1][self.Y] == 0 or newMaze.layout[self.X-1][self.Y] == 2:
-                    newMaze.layout[self.X][self.Y] = 2
+                if newMaze.layout[self.X-1][self.Y] == FLOOR or newMaze.layout[self.X-1][self.Y] == PATH:
+                    newMaze.layout[self.X][self.Y] = PATH
                     self.oldX = self.X
                     self.oldY = self.Y
                     self.X -= 1
         
         if key[pygame.K_RIGHT]:
             if self.Y != (boardWidth-1):
-                if newMaze.layout[self.X+1][self.Y] == 0 or newMaze.layout[self.X+1][self.Y] == 2:
-                    newMaze.layout[self.X][self.Y] = 2
+                if newMaze.layout[self.X+1][self.Y] == FLOOR or newMaze.layout[self.X+1][self.Y] == PATH:
+                    newMaze.layout[self.X][self.Y] = PATH
                     self.oldX = self.X
                     self.oldY = self.Y
                     self.X += 1
@@ -196,7 +192,7 @@ class player(): #The player
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouseX,mouseY = pygame.mouse.get_pos()
-                solver.__init__() #Reset solver
+                solver.__init__()
                 self.X = mouseX/tileSize
                 self.Y = mouseY/tileSize
     
