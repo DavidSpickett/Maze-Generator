@@ -159,10 +159,10 @@ class mazeSolver():
                 self.neighbours.append((self.x,self.y+1))
         
         if self.neighbours: #If we found some neighbours that are open
-            newX, newY = self.neighbours[0] #Take the first option
+            new_x, new_y = self.neighbours[0] #Take the first option
             self.stack.append((self.x,self.y)) #Save old position to stack
-            self.x = newX
-            self.y = newY
+            self.x = new_x
+            self.y = new_y
             
         else: #Cell has no open neighbours
             if self.stack:
