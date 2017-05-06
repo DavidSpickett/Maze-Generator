@@ -201,8 +201,7 @@ def checkControls(maze):
 try:
     newMaze = maze()
     solver = mazeSolver(newMaze)
-    run = True 
-    solver_x, solver_y = 0, 0
+    run = True
     while run:
         newMaze.draw(*solver.solve())
         run = checkControls(newMaze)
